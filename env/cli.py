@@ -1,61 +1,88 @@
 import os
+import shutil
 import click
-import subprocess
-import sys
 
-BASE_ENV_DIR = os.path.expanduser("~/.envs")  # Store environments in a common location
+# Define the directory where virtual environments will be stored
+ENV_DIR = os.path.expanduser("~/.envs")  # Linux/macOS
+if os.name == "nt":  # Windows
+    ENV_DIR = os.path.join(os.getenv("USERPROFILE"), ".envs")
 
-if not os.path.exists(BASE_ENV_DIR):
-    os.makedirs(BASE_ENV_DIR)
+
+# Ensure ENV_DIR exists
+os.makedirs(ENV_DIR, exist_ok=True)
+
 
 @click.group()
 def cli():
     """Environment Management CLI"""
     pass
 
-@cli.command()
-@click.argument("env_name")
-def create(env_name):
+
+@click.command()
+@click.argument("name")
+def create(name):
     """Create a new virtual environment"""
-    env_path = os.path.join(BASE_ENV_DIR, env_name)
+    env_path = os.path.join(ENV_DIR, name)
+
     if os.path.exists(env_path):
-        click.echo(f"Environment '{env_name}' already exists.")
+        click.echo(f"Environment '{name}' already exists!")
         return
-    subprocess.run([sys.executable, "-m", "venv", env_path])
-    click.echo(f"Environment '{env_name}' created at {env_path}.")
 
-@cli.command()
-@click.argument("env_name")
-def activate(env_name):
+    os.system(f"python -m venv {env_path}")
+    click.echo(f"Environment '{name}' created at {env_path}")
+
+
+@click.command()
+@click.argument("name")
+def activate(name):
     """Print activation command for an environment"""
-    env_path = os.path.join(BASE_ENV_DIR, env_name)
+    env_path = os.path.join(ENV_DIR, name)
+    
     if not os.path.exists(env_path):
-        click.echo(f"Environment '{env_name}' does not exist.")
+        click.echo(f"Environment '{name}' not found!")
         return
-    activation_script = os.path.join(env_path, "Scripts" if os.name == "nt" else "bin", "activate")
-    click.echo(f"Run this command to activate: source {activation_script}" if os.name != "nt" else activation_script)
 
-@cli.command()
+    if os.name == "nt":  # Windows
+        activate_command = f"{env_path}\\Scripts\\activate"
+    else:  # Linux/macOS
+        activate_command = f"source {env_path}/bin/activate"
+
+    click.echo(f"Run the following command to activate the environment:\n{activate_command}")
+
+
+@click.command()
 def list():
     """List all environments"""
-    envs = os.listdir(BASE_ENV_DIR)
+    envs = os.listdir(ENV_DIR)
     if not envs:
         click.echo("No environments found.")
-        return
-    click.echo("Available Environments:")
-    for env in envs:
-        click.echo(f"- {env}")
+    else:
+        click.echo("Available Environments:")
+        for env in envs:
+            click.echo(f"  - {env}")
 
-@cli.command()
-@click.argument("env_name")
-def delete(env_name):
+
+@click.command()
+@click.argument("name")
+def delete(name):
     """Delete a virtual environment"""
-    env_path = os.path.join(BASE_ENV_DIR, env_name)
-    if not os.path.exists(env_path):
-        click.echo(f"Environment '{env_name}' does not exist.")
-        return
-    subprocess.run(["rm", "-rf", env_path] if os.name != "nt" else ["rmdir", "/s", "/q", env_path], shell=True)
-    click.echo(f"Environment '{env_name}' deleted.")
+    env_path = os.path.join(ENV_DIR, name)
+
+    if os.path.exists(env_path):
+        try:
+            shutil.rmtree(env_path)  # Deletes the environment folder
+            click.echo(f"Environment '{name}' deleted successfully.")
+        except Exception as e:
+            click.echo(f"Error deleting environment '{name}': {e}")
+    else:
+        click.echo(f"Environment '{name}' not found.")
+
+
+# Add commands to the CLI
+cli.add_command(create)
+cli.add_command(activate)
+cli.add_command(list)
+cli.add_command(delete)
 
 if __name__ == "__main__":
     cli()
