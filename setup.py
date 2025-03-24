@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="env",
     version="0.1.0",
-    packages=find_packages(),
+    packages=find_packages(),  # Automatically finds the 'env' package
     install_requires=["click"],
     entry_points={
         "console_scripts": [
