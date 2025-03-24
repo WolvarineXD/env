@@ -1,17 +1,15 @@
-from setuptools import setup, find_packages
-
 setup(
-    name="env",
+    name="autoPyEnV",  # Updated unique package name
     version="0.1.0",
     packages=find_packages(),
     install_requires=["click"],
     entry_points={
         "console_scripts": [
-            "env=env.cli:cli",
+            "env=env.cli:cli",  # Keep CLI command as "env"
         ],
     },
-    author="WolvarineXD",
-    description="A simple environment management tool",
+    author="Your Name",
+    description="An automated Python environment management tool",
     url="https://github.com/WolvarineXD/env",
     classifiers=[
         "Programming Language :: Python :: 3",
