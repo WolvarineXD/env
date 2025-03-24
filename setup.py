@@ -3,14 +3,14 @@ from setuptools import setup, find_packages
 setup(
     name="env",
     version="0.1.0",
-    packages=find_packages(),  # Automatically finds the 'env' package
+    packages=find_packages(),
     install_requires=["click"],
     entry_points={
         "console_scripts": [
             "env=env.cli:cli",
         ],
     },
-    author="Your Name",
+    author="WolvarineXD",
     description="A simple environment management tool",
     url="https://github.com/WolvarineXD/env",
     classifiers=[
